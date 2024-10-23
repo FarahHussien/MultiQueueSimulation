@@ -20,6 +20,7 @@ namespace MultiQueueSimulation
             SimulationSystem system = new SimulationSystem();
             string result = TestingManager.Test(system, Constants.FileNames.TestCase1);
 
+            system.RunSimulation();
             MessageBox.Show(result);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

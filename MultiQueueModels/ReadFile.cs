@@ -5,13 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
-namespace MultiQueueSimulation
+namespace MultiQueueModels
 {
     public class ReadFiles
     {
         public List<int> ConfigValues { get; private set; }
         public List<(int, double)> InterarrivalDistribution { get; private set; }
-        public List<List<Dictionary<int, double>>> ServiceDistribution { get; private set; }
+        public List<(int, double)> ServiceDistribution { get; private set; }
 
         private bool isServiceSection = false; // To track if we are in the service section
 
@@ -19,14 +19,14 @@ namespace MultiQueueSimulation
         {
             ConfigValues = new List<int>();
             InterarrivalDistribution = new List<(int, double)>();
-            ServiceDistribution = new List<List<Dictionary<int, double>>>();
+            ServiceDistribution = new List<(int, double)>();
         }
 
         public ReadFiles ParseFile(string filePath)
         {
             using (WordprocessingDocument wordDoc = WordprocessingDocument.Open(filePath, false))
             {
-                Body body = wordDoc.MainDocumentPart.Document.Body;
+                Body body = wordDoc.MainDocumentPart?.Document.Body;
 
                 foreach (var paragraph in body.Descendants<DocumentFormat.OpenXml.Wordprocessing.Paragraph>())
                 {
@@ -43,11 +43,10 @@ namespace MultiQueueSimulation
                         isServiceSection = true; // Switch to service distribution section
                     }
 
-                    ProcessParagraph(paragraphText); // Process each paragraph
+                    ProcessParagraph(paragraphText);
                 }
             }
 
-            // Return parsed data
             return new ReadFiles
             {
                 ConfigValues = ConfigValues,
@@ -87,19 +86,11 @@ namespace MultiQueueSimulation
 
         private void ParseServiceDistribution(string paragraphText)
         {
-            Dictionary<int, double> serverDistribution = new Dictionary<int, double>();
             var values = paragraphText.Split(',');
             int value = int.Parse(values[0]);
             double probability = double.Parse(values[1]);
 
-            serverDistribution.Add(value, probability);
-
-            // Ensure the list can store distributions for each server
-            if (ServiceDistribution.Count < ConfigValues[0])
-            {
-                ServiceDistribution.Add(new List<Dictionary<int, double>>());
-            }
-            ServiceDistribution[ServiceDistribution.Count - 1].Add(serverDistribution);
+            ServiceDistribution.Add((value, probability));
         }
 
         public static bool IsNumeric(string input)
@@ -115,5 +106,6 @@ namespace MultiQueueSimulation
             }
             return true;
         }
+
     }
 }
