@@ -78,18 +78,25 @@ namespace MultiQueueModels
             int currentIndex = 0;
 
             for (int i = 0; i < this.NumberOfServers; i++)
-            {   
-                for (int j = 0; j < servicePerServer; j++)
+            {
+                Server curServer = new Server
+                {
+                    ID = i // Assign an ID or any other initialization logic you need
+                };
+                for (int j = 0; j < servicePerServer; j++) 
                 {
                     var serviceDist = fileData.ServiceDistribution[currentIndex];
 
-                    this.Servers[i].TimeDistribution.Add(new TimeDistribution
+                    curServer.TimeDistribution.Add(new TimeDistribution
                     {
-                        Time = serviceDist.Item1,      
-                        Probability = (decimal)serviceDist.Item2 
+                        Time = serviceDist.Item1,
+                        Probability = (decimal)serviceDist.Item2
+
                     });
                     currentIndex++;
                 }
+                // Now add the new server to the Servers list
+                this.Servers.Add(curServer);
             }
         }
 
@@ -100,7 +107,7 @@ namespace MultiQueueModels
             int TCWIQ = 0;  //nada edit
             int TTCWIQ = 0; //nada edit
             int interArrival = 0;
-
+            Console.WriteLine("before for that loop on customers");
             for (int customerNumber = 1; customerNumber <= StoppingNumber; customerNumber++)
             {
                 int randomInterArrival = GenerateRandomValue();
@@ -109,7 +116,10 @@ namespace MultiQueueModels
                 int arrivalTime = previousArrivalTime + interArrival;
 
                 int randomService = GenerateRandomValue();
+                Console.WriteLine("before select server");
                 Server assignedServer = SelectServer(arrivalTime, randomService, SelectionMethod);
+                Console.WriteLine("after select server");
+
                 int serviceTime = GetServiceTime(assignedServer, randomService); // return service time based on which server and its random service
                 assignedServer.TotalWorkingTime += serviceTime;
 
@@ -119,7 +129,7 @@ namespace MultiQueueModels
 
                 // Update the server's finish time
                 assignedServer.FinishTime = endTime;
-
+                Console.WriteLine("before set each case");
                 // Set the case for this customer
                 SetCase(
                     customerNumber: customerNumber,
@@ -133,6 +143,7 @@ namespace MultiQueueModels
                     endTime: endTime,
                     timeInQueue: timeInQueue // task must be calculated for each customer delay in queue
                 );
+
                 // end of each case
 
                 // set total customers waiting in queue (TCWIQ) //nada edit
@@ -185,7 +196,7 @@ namespace MultiQueueModels
              * sever_index => to store the indces of idel servers
              * index the index => of choosen sever
              */
-
+            Console.WriteLine("inside function gehad");
             int count_idle = 0, index = -1;
             int[] server_index = new int[Servers.Count];
 
@@ -197,6 +208,7 @@ namespace MultiQueueModels
                     count_idle++;
                 }
             }
+            Console.WriteLine("after first forloop");
             do
             {
 
@@ -274,10 +286,10 @@ namespace MultiQueueModels
                 }
 
             } while (index == -1);
+            Console.WriteLine("after do while loop");
 
             return Servers[index];
         }
-
         public PerformanceMeasures SetPerformance_Measures(PerformanceMeasures PerformanceMeasures, int TCWIQ, int TTCWIQ)
         {
 
